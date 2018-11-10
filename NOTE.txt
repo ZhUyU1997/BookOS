@@ -1,0 +1,16 @@
+>use asm to write vram will lead a better result!
+
+>How to load loade and kernel from fs£¿
+1.load and kernel must write into fs.
+  we make a write os to do it.it just used to write file into disk.
+  it is boot from flappy.
+2.read from fs.
+  read file with fatxe, so that we read load and kernel correctly.
+
+
+16:04 2018/10/23
+There are something wrong with ls. 	--0:46 2018/10/26
+0:50 2018/10/26
+what wll i do £¿
+1.sort program ,system call£¬ dir --14:49 2018/10/26
+2.hda boot os --22:29 2018/11/1
