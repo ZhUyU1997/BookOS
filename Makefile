@@ -62,45 +62,36 @@ OBJS =  $(BUILD_DIR)kernel/_start.o\
 		$(BUILD_DIR)kernel/ioqueue.o\
 		$(BUILD_DIR)kernel/irqservice.o\
 		$(BUILD_DIR)kernel/mailbox.o\
+		$(BUILD_DIR)kernel/request.o\
 		$(BUILD_DIR)driver/vga.o\
 		$(BUILD_DIR)driver/clock.o\
 		$(BUILD_DIR)driver/hd.o\
 		$(BUILD_DIR)driver/keyboard.o\
 		$(BUILD_DIR)driver/cmos.o\
 		$(BUILD_DIR)driver/mouse.o\
-		$(BUILD_DIR)driver/console.o\
-		$(BUILD_DIR)driver/video.o\
 		$(BUILD_DIR)lib/vsprintf.o\
 		$(BUILD_DIR)lib/string.o\
-		$(BUILD_DIR)lib/kernel/bitmap.o\
-		$(BUILD_DIR)lib/user/exit.o\
-		$(BUILD_DIR)lib/user/printf.o\
-		$(BUILD_DIR)lib/user/getpid.o\
-		$(BUILD_DIR)lib/user/file.o\
-		$(BUILD_DIR)lib/user/malloc.o\
-		$(BUILD_DIR)lib/user/getticks.o\
-		$(BUILD_DIR)lib/user/getch.o\
-		$(BUILD_DIR)lib/user/clear.o\
-		$(BUILD_DIR)lib/user/ps.o\
-		$(BUILD_DIR)lib/user/func.o\
-		$(BUILD_DIR)lib/user/task.o\
-		$(BUILD_DIR)lib/user/putch.o\
-		$(BUILD_DIR)lib/user/wait.o\
-		$(BUILD_DIR)lib/user/mailbox.o\
-		$(BUILD_DIR)lib/user/disk.o\
-		$(BUILD_DIR)lib/user/graph.o\
+		$(BUILD_DIR)lib/bitmap.o\
+		$(BUILD_DIR)lib/exit.o\
+		$(BUILD_DIR)lib/printf.o\
+		$(BUILD_DIR)lib/getpid.o\
+		$(BUILD_DIR)lib/file.o\
+		$(BUILD_DIR)lib/malloc.o\
+		$(BUILD_DIR)lib/getticks.o\
+		$(BUILD_DIR)lib/getch.o\
+		$(BUILD_DIR)lib/clear.o\
+		$(BUILD_DIR)lib/ps.o\
+		$(BUILD_DIR)lib/func.o\
+		$(BUILD_DIR)lib/task.o\
+		$(BUILD_DIR)lib/putch.o\
+		$(BUILD_DIR)lib/wait.o\
+		$(BUILD_DIR)lib/mailbox.o\
+		$(BUILD_DIR)lib/disk.o\
+		$(BUILD_DIR)lib/request.o\
 		$(BUILD_DIR)fs/fatxe.o\
 		$(BUILD_DIR)fs/fat.o\
 		$(BUILD_DIR)fs/dir.o\
-		$(BUILD_DIR)fs/file.o\
-		$(BUILD_DIR)graph/graph.o\
-		$(BUILD_DIR)graph/color.o\
-		$(BUILD_DIR)graph/fonts.o\
-		$(BUILD_DIR)graph/surface.o\
-		$(BUILD_DIR)graph/layout.o\
-		$(BUILD_DIR)graph/button.o\
-		$(BUILD_DIR)graph/text.o\
-		$(BUILD_DIR)graph/view.o
+		$(BUILD_DIR)fs/file.o
 		
 #Finall destination is all
 .PHONY: style0
@@ -133,20 +124,11 @@ clean:
 	-rm $(BUILD_DIR)kernel/KERNEL 
 	-rm $(BUILD_DIR)kernel/*.o
 	-rm $(BUILD_DIR)lib/*.o
-	-rm $(BUILD_DIR)lib/user/*.o
-	-rm $(BUILD_DIR)lib/kernel/*.o
 	-rm $(BUILD_DIR)driver/*.o
-	-rm $(BUILD_DIR)syscall/*.o
-	-rm $(BUILD_DIR)gui/*.o
-	-rm $(BUILD_DIR)command/*.o
-	-rm $(BUILD_DIR)application/*.o
-	-rm $(BUILD_DIR)print/*.o
 	-rm $(BUILD_DIR)boot/*.bin
 	-rm $(BUILD_DIR)fs/*.o
-	-rm $(BUILD_DIR)graph/*.o
 	-rm $(BUILD_DIR)init/*.o
-	-rm $(BUILD_DIR)shell/*.o
-	
+
 #Only clean kernel file
 clean_kernel:
 	-rm $(BUILD_DIR)kernel/KERNEL 
@@ -233,7 +215,12 @@ $(BUILD_DIR)kernel/console.o : kernel/console.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<	
 $(BUILD_DIR)kernel/mailbox.o : kernel/mailbox.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<	
+$(BUILD_DIR)kernel/request.o : kernel/request.c
+	$(CC) $(C_KERNEL_FLAGS) -o $@ $<	
 
+$(BUILD_DIR)kernel/shell.o : kernel/shell.c
+	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
+	
 ############
 #driver file
 ############
@@ -246,23 +233,15 @@ $(BUILD_DIR)driver/clock.o : driver/clock.c
 $(BUILD_DIR)driver/keyboard.o : driver/keyboard.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 
-$(BUILD_DIR)driver/video.o : driver/video.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
 $(BUILD_DIR)driver/mouse.o : driver/mouse.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 
-$(BUILD_DIR)driver/console.o : driver/console.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-	
 $(BUILD_DIR)driver/cmos.o : driver/cmos.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 
 $(BUILD_DIR)driver/timer.o : driver/timer.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 $(BUILD_DIR)driver/hd.o : driver/hd.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)driver/vhd.o : driver/vhd.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 
 ############	
@@ -273,50 +252,49 @@ $(BUILD_DIR)lib/string.o : lib/string.c
 $(BUILD_DIR)lib/vsprintf.o : lib/vsprintf.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 
-$(BUILD_DIR)lib/kernel/bitmap.o : lib/kernel/bitmap.c
+$(BUILD_DIR)lib/bitmap.o : lib/bitmap.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 
-$(BUILD_DIR)lib/GL.o : lib/GL.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
-$(BUILD_DIR)lib/user/exit.o  : lib/user/exit.asm
+$(BUILD_DIR)lib/exit.o  : lib/exit.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-$(BUILD_DIR)lib/user/printf.o : lib/user/printf.asm
+$(BUILD_DIR)lib/printf.o : lib/printf.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 	
-$(BUILD_DIR)lib/user/getpid.o : lib/user/getpid.asm
+$(BUILD_DIR)lib/getpid.o : lib/getpid.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-$(BUILD_DIR)lib/user/fatxe.o : lib/user/fatxe.asm
+$(BUILD_DIR)lib/fatxe.o : lib/fatxe.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/malloc.o : lib/user/malloc.asm
+$(BUILD_DIR)lib/malloc.o : lib/malloc.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/getticks.o : lib/user/getticks.asm
+$(BUILD_DIR)lib/getticks.o : lib/getticks.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/getch.o : lib/user/getch.asm
+$(BUILD_DIR)lib/getch.o : lib/getch.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/clear.o : lib/user/clear.asm
+$(BUILD_DIR)lib/clear.o : lib/clear.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/ps.o : lib/user/ps.asm
+$(BUILD_DIR)lib/ps.o : lib/ps.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/func.o : lib/user/func.c
+$(BUILD_DIR)lib/func.o : lib/func.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/task.o : lib/user/task.c
+$(BUILD_DIR)lib/task.o : lib/task.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/putch.o : lib/user/putch.asm
+$(BUILD_DIR)lib/putch.o : lib/putch.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/file.o : lib/user/file.c
+$(BUILD_DIR)lib/file.o : lib/file.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<	
-$(BUILD_DIR)lib/user/wait.o : lib/user/wait.asm
+$(BUILD_DIR)lib/wait.o : lib/wait.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/mailbox.o : lib/user/mailbox.asm
+$(BUILD_DIR)lib/mailbox.o : lib/mailbox.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)lib/user/disk.o : lib/user/disk.c
+$(BUILD_DIR)lib/disk.o : lib/disk.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<	
-$(BUILD_DIR)lib/user/graph.o : lib/user/graph.asm
+$(BUILD_DIR)lib/graphic.o : lib/graphic.c
+	$(CC) $(C_KERNEL_FLAGS) -o $@ $<	
+$(BUILD_DIR)lib/request.o : lib/request.asm
 	$(NASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-
+	
 ############
 #syscall file
 ############ 	
@@ -326,42 +304,6 @@ $(BUILD_DIR)syscall/syscall.o : syscall/syscall.asm
 $(BUILD_DIR)syscall/printf.o : syscall/printf.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 	
-	
-############	
-#print file 
-############
-
-$(BUILD_DIR)lib/kernel/vsprintf.o : lib/kernel/vsprintf.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<	
-
-############	
-#gui file
-############
-
-$(BUILD_DIR)gui/graphic.o : gui/graphic.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-	
-$(BUILD_DIR)gui/font.o : gui/font.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-	
-$(BUILD_DIR)gui/layer.o : gui/layer.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-	
-$(BUILD_DIR)gui/gui.o : gui/gui.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-	
-$(BUILD_DIR)gui/desktop.o : gui/desktop.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-	
-$(BUILD_DIR)gui/window.o : gui/window.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)gui/button.o : gui/button.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)gui/icon.o : gui/icon.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)gui/opengl.o : gui/opengl.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
 ############
 #fs file
 ############ 	
@@ -372,75 +314,4 @@ $(BUILD_DIR)fs/fat.o : fs/fat.c
 $(BUILD_DIR)fs/dir.o : fs/dir.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
 $(BUILD_DIR)fs/file.o : fs/file.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
-############	
-#command file
-############
-
-$(BUILD_DIR)command/cmd_cls.o : command/cmd_cls.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
-$(BUILD_DIR)command/cmd_os.o : command/cmd_os.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
-$(BUILD_DIR)command/cmd_help.o : command/cmd_help.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-	
-$(BUILD_DIR)command/cmd_ptask.o : command/cmd_ptask.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)command/cmd_mem.o : command/cmd_mem.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)command/cmd_hd.o : command/cmd_hd.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)command/cmd_ie.o : command/cmd_ie.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
-############	
-#app file
-############
-
-$(BUILD_DIR)application/application.o : application/application.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)application/app_2048.o : application/app_2048.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)application/app_test.o : application/app_test.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)application/app_cpuid.o : application/app_cpuid.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)application/notepad.o : application/notepad.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)application/app_html.o : application/app_html.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)application/app_gl.o : application/app_gl.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-##	
-#graph file
-##
-
-$(BUILD_DIR)graph/graph.o : graph/graph.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/video.o : graph/video.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/fonts.o : graph/fonts.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/Layer.o : graph/Layer.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/color.o : graph/color.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/surface.o : graph/surface.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/layout.o : graph/layout.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/button.o : graph/button.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/text.o : graph/text.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-$(BUILD_DIR)graph/view.o : graph/view.c
-	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
-
-##	
-#shell file
-##
-$(BUILD_DIR)shell/shell.o : shell/shell.c
 	$(CC) $(C_KERNEL_FLAGS) -o $@ $<
