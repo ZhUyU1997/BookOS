@@ -29,7 +29,7 @@ void init_directory()
 		uint32_t cluster = get_a_cluster();
 		root_dir.high_cluster = (cluster&0xffff0000)>>16;
 		root_dir.low_cluster = cluster&0x00000ffff;
-		root_dir.size = 1;
+		root_dir.size = 0;
 		
 		root_dir.create_date = DATE_TO_DATA16(time.year, time.month, time.day);
 		root_dir.create_time =  TIME_TO_DATA16(time.hour, time.minute, time.second);
@@ -57,8 +57,7 @@ void init_directory()
 	
 	
 	kfree(buffer);
-	//uint32_t lba = cluster_to_lba(root_dir_entry.high_cluster<<16|root_dir_entry.low_cluster);
-	//printk("DIR:/%s cluster:%d lba:%d\n",root_dir_entry.name, lba_to_cluster(lba), lba);
+
 }
 
 int32_t sys_mkdir(const char *pathname)
