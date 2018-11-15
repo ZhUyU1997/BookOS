@@ -4,7 +4,6 @@
 #include "kernel/descriptor.h"
 #include "kernel/task.h"
 #include "kernel/tss.h"
-#include "driver/timer.h"
 #include "kernel/memory.h"
 #include "kernel/irqservice.h"
 
@@ -22,18 +21,12 @@ if computer is 11 pm(23 )， we get hour 15
 
 void init_clock(void)
 {
-	/*io_out8(PIT_CNT0, (unsigned char) (TIMER_FREQ/HZ));
-	io_out8(PIT_CNT0, (unsigned char) ((TIMER_FREQ/HZ) >> 8));
-	*/
+
 	//0.001秒触发一次中断
 	io_out8(PIT_CTRL, 0x34);
 	io_out8(PIT_CNT0, (unsigned char) (TIMER_FREQ/HZ));
 	io_out8(PIT_CNT0, (unsigned char) ((TIMER_FREQ/HZ) >> 8));
-	/*io_out8(PIT_CTRL, 0x34);
-	io_out8(PIT_CNT0, 0x9c);
-	io_out8(PIT_CNT0, 0x2e);
-	*/
-	
+
 	clock.last_ticks = clock.ticks = 0;
 	
 	clock.can_schdule = true;
@@ -55,15 +48,10 @@ void init_clock(void)
 		}
 	}while(time.second != get_sec_hex());
 	
-	//init_timer_manage();
-
 	put_irq_handler(CLOCK_IRQ, clock_handler);
 	enable_irq(CLOCK_IRQ);
 	put_str(">init clock\n");
 }
-
-extern struct task *task_test,*task_idle;
-extern void change_task(struct task *task);
 
 void clock_handler(int irq)
 {

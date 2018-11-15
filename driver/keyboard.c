@@ -3,32 +3,24 @@
 #include "kernel/io.h"
 #include "driver/vga.h"
 #include "driver/keymap.h"
-#include "gui/gui.h"
-#include "gui/graphic.h"
-#include "gui/layer.h"
-#include "driver/console.h"
 #include "kernel/syscall.h"
 #include "kernel/task.h"
-#include "gui/window.h"
 #include "kernel/message.h"
 #include "kernel/debug.h"
 #include "kernel/interruption.h"
 #include "kernel/irqservice.h"
 
-int key_buf[KEYBOARD_FIFO_LEN];
-int syscall_keyboard_char;
-
 uint8_t get_byte_from_kbuf() ;
 static	int	code_with_E0 = 0;
-static	int	shift_l;	/* l shift state */
-static	int	shift_r;	/* r shift state */
-static	int	alt_l;		/* l alt state	 */
-static	int	alt_r;		/* r left state	 */
-static	int	ctrl_l;		/* l ctrl state	 */
-static	int	ctrl_r;		/* l ctrl state	 */
-static	int	caps_lock;	/* Caps Lock	 */
-static	int	num_lock;	/* Num Lock	 */
-static	int	scroll_lock;	/* Scroll Lock	 */
+static	int	shift_l;
+static	int	shift_r;
+static	int	alt_l;	
+static	int	alt_r;	
+static	int	ctrl_l;	
+static	int	ctrl_r;	
+static	int	caps_lock;	
+static	int	num_lock;
+static	int	scroll_lock;
 static	int	column;
 
 static void kb_wait();
@@ -36,7 +28,6 @@ static void kb_ack();
 static void set_leds();
 
 int keyboard_data;
-
 
 void key_char_process(uint32_t key);
 void put_key(uint32_t key);
@@ -100,26 +91,6 @@ void wait_KBC_sendready(void)
 	}
 	return;
 }
-/*
-void task_keyboard_entry()
-{
-	int i = 0;
-	struct task *task = task_current();
-	//printf("Driver of keyboard is running.\n");
-
-	for(;;){
-		if(fifo32_status(&key_fifo) == 0){
-			if(task->status != TASK_SLEEP){
-				//task_sleep(task);
-			}
-		} else {
-			if(fifo32_status(&key_fifo) != 0){
-				keyboard_read();
-			}
-		}
-	}
-}*/
-
 /*
 把数据交给keyboard处理
 */
@@ -322,14 +293,10 @@ void keyboard_main()
 				key_char_process(key);
 			}
 		}
-	/*if(irq_service.keyboard_key != -1){
-		printk("[keyboard] key=%c\n", irq_service.keyboard_key);
-	}	*/
 }
 
 void key_char_process(uint32_t key)
 {
-	//char output[2] = {'\0', '\0'};
 
 	if (!(key & FLAG_EXT)) {
 		//gprintk("C");
@@ -347,19 +314,19 @@ void key_char_process(uint32_t key)
 				put_key( '\t');
 				break;
 			case F1:
-				//put_key( F1);
+				put_key( F1);
 				
 				break;
 			case F2:
-				//put_key( F2);
+				put_key( F2);
 				
 				break;
 			case F3:
-				//put_key( F3);
+				put_key( F3);
 				
 				break;
 			case F4:
-				//put_key( F4);
+				put_key( F4);
 				
 				break;
 			case F5:
@@ -377,14 +344,14 @@ void key_char_process(uint32_t key)
 				put_key(DOWN);
 				break;
 			case LEFT:
-				//gprintk("LEFT");
+				
 				put_key(LEFT);
 				break;
 			case RIGHT:
-				//gprintk("RIGHT");
+				
 				put_key(RIGHT);
 				break;
-				//syscall_keyboard_char = 1000;
+				
 			default:
 				break;
 		}
@@ -393,8 +360,6 @@ void key_char_process(uint32_t key)
 
 void put_key(uint32_t key)
 {
-	//ioqueue_put(current_console->ioqueue, key);
-	//current_console->key = key;
 	irq_service.keyboard_key = key;
 }
 

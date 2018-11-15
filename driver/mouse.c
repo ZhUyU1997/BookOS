@@ -1,27 +1,16 @@
 #include "driver/mouse.h"
 #include "driver/keyboard.h"
-#include "driver/video.h"
 #include "kernel/8259a.h"
-#include "gui/gui.h"
-#include "gui/layer.h"
 #include "kernel/memory.h"
-#include "gui/icon.h"
 #include "kernel/irqservice.h"
-#include "driver/video.h"
 #include "lib/math.h"
 #include "driver/clock.h"
-#include "driver/video.h"
-#include "graph/surface.h"
-#include "graph/graph.h"
 
 #define KEYCMD_SENDTO_MOUSE		0xd4
 #define MOUSECMD_ENABLE			0xf4
 
 struct mouse mouse;
-/*
-extern struct task *task_mouse;
-extern struct layer *layer_desktop;
-*/
+
 void init_mouse()
 {
 	mouse.x = mouse.old_x = 0;		//鼠标信息初始化
@@ -34,17 +23,14 @@ void init_mouse()
 	mouse.key_right_continue = false;
 	mouse.key_roller_continue = false;
 
-	//初始化鼠标数据缓冲
-	//fifo32_init(&mouse.fifo, MOUSE_FIFO_BUF_LEN, mouse.mouse_fifo_buf);
-	
 	//初始化鼠标中断
 	put_irq_handler(MOUSE_IRQ, mouse_handler);
 	//打开从片
 	enable_irq(CASCADE_IRQ);
-	//打开鼠标中断
+	/*//打开鼠标中断
 	enable_irq(MOUSE_IRQ);
 	//激活鼠标前要设定键盘相关信息
-	enable_mouse(&mouse);
+	enable_mouse(&mouse);*/
 }
 
 void enable_mouse(struct mouse *mouse)
@@ -96,32 +82,26 @@ int32_t get_mouse_y()
 {
 	return mouse.y;
 }
-extern int mouse_refresh_counts;
 
 void mouse_main()
 {
 	//从缓冲区读取一个数据，并解析每个数据，如果解析成功
 	if(mouse_read(&mouse, ioqueue_get(&irq_service.ioqueue, IQ_MODE_MOVE) - MOUSE_DATA_LOW) != 0) {
 		//对原始数据操作
-		
 		mouse.x += mouse.x_increase;
 		mouse.y += mouse.y_increase;
-		if(mouse.x_increase!=0 || mouse.y_increase!=0 ){
-			graphc_service.mouse_refresh_couter++;
-		}
-		
-		
+
 		if (mouse.x < 0) {
 			mouse.x = 0;
 		}
 		if (mouse.y < 0) {
 			mouse.y = 0;
 		}
-		if (mouse.x >= video_info.wide) {
-			mouse.x = video_info.wide - 1;
+		if (mouse.x > 80) {
+			mouse.x = 80;
 		}
-		if (mouse.y >= video_info.high) {
-			mouse.y = video_info.high - 1;
+		if (mouse.y >= 25) {
+			mouse.y = 25;
 		}
 		if((mouse.button & 0x01) != 0){
 			mouse.key_left = true;

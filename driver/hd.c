@@ -271,7 +271,7 @@ void hd_read_sectors(int lba, void *buf, int sectors)
 {
 	//clock.can_schdule = false;
 	//If disk is busy for read, we wait
-	while(current_disk->reading);
+	//while(current_disk->reading);
 	int l = lba, s = sectors;
 	uint8_t *b = buf;
 	lock_acquire(hd_service.lock);
@@ -291,7 +291,7 @@ void hd_write_sectors(int lba, void *buf, int sectors)
 	int l = lba, s = sectors;
 	uint8_t *b = buf;
 	//If disk is busy for write, we wait
-	while(current_disk->writing);
+	//while(current_disk->writing);
 	lock_acquire(hd_service.lock);
 	
 	while(s > 0){
@@ -379,19 +379,3 @@ void use_disk(int dev)
 			break;
 	}
 }
-
-void task_ioctl_entry()
-{
-	struct task *task = task_current();
-	
-	hd_identify(&hda);
-	hd_identify(&hdb);
-	int i = 0;
-	while(1){
-		i++;
-	}
-	
-}
-
-
-
