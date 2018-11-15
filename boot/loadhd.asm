@@ -4,31 +4,10 @@ KERNEL_SECTORS_ALL EQU (128*3)	;now kernel only use 256 sector(256*512/1024 = 12
 
 KERNEL_SEG EQU 0x1000
 
-
-
-
 ;0x7c00~0x7e00	boot.bin	512byte 1sector
 ;0x70000~0x71000	load.bin	1kb 8sector	
 ;0x71000~0x80000	kernel.bin	60kb 120sector	
 
-;0x111 640*480*16bit 
-;0x114 800*600*16bit 
-;0x117 1024*768*16bit 
-;0x11a 1280*1024*16bit 
-
-;16 bits
-MODE_640_480_16 EQU 0x111
-MODE_800_600_16 EQU 0x114
-MODE_10240_768_16 EQU 0x117
-MODE_1280_1024_16 EQU 0x11A
-
-;24 bits
-MODE_640_480_24 EQU 0x112
-MODE_800_600_24 EQU 0x115
-MODE_10240_768_24 EQU 0x118
-MODE_1280_1024_24 EQU 0x11B
-
-VBEMODE	EQU	MODE_800_600_24			; 800*600*16bit
 
 ;其实是0x600*16+0x0000，因为偏移地址
 ARDS_BUF	EQU		0x0004	;ards buf 地址（0x6004）
@@ -53,25 +32,6 @@ VRAM	EQU		6			; VRAM 地址
 	mov al, [char]
 	mov byte [es:2],al
 	mov byte [es:3],0X04
-	
-	;jmp $
-	
-;加载内核
-	;mov ax, 0x1000
-	;mov si, KERNEL_SECTOR_OFFSET
-	;mov cx, 128
-	;call load_file
-	
-	
-	;mov ax, 0x2000
-	;mov si, KERNEL_SECTOR_OFFSET+128
-	;mov cx, 128
-	;call load_file
-	
-	;mov ax, 0x3000
-	;mov si, KERNEL_SECTOR_OFFSET+256
-	;mov cx, 128
-	;call load_file
 	
 	;every time we can read 128 sectors
 	mov	dword [disk_address_packet +  6], KERNEL_SEG
@@ -103,76 +63,9 @@ check_memory:
 	add word [es:ARDS_NR], 1
 	cmp ebx, 0
 	jnz .e820_mem_get_loop
-	jmp init_vbe
+	jmp protect_set
 .e820_check_failed:
 	jmp $
-
-	
-init_vbe:
-
-	;检查VBE是否存在
-	;缓冲区 0x90000开始
-	mov	ax,0x9000	
-	mov	es,ax
-	mov	di,0
-	mov	ax,0x4f00	;检查VBE存在功能，指定ax=0x4f00
-	int	0x10
-	cmp	ax,0x004f	;ax=0x004f 存在
-	jne	screen_default
-	
-	;检查VBE版本，必须是VBE 2.0及其以上
-	mov	ax,[es:di+4]
-	cmp	ax,0x0200
-	jb	screen_default			; if (ax < 0x0200) goto screen_default
-
-	;获取画面信息， 256字节
-	;cx=输入检查的模式
-	;[es:di+0x00]	模式属性	bit7是1就能加上0x4000，便于操作
-	;[es:di+0x12]	x的分辨率	宽度
-	;[es:di+0x14]	y的分辨率	高度
-	;[es:di+0x19]	颜色数		8位，16位，24位，32位
-	;[es:di+0x1b]	颜色的指定方法 	调色板等
-	;[es:di+0x28]	VRAM 地址
-	
-	mov	cx,VBEMODE	;cx=模式号
-	mov	ax,0x4f01	;获取画面模式功能，指定ax=0x4f01
-	int	0x10
-	cmp	ax,0x004f	;ax=0x004f 指定的这种模式可以使用
-	jne	screen_default
-
-	;切换到指定的模式
-	mov	BX,VBEMODE+0x4000	;bx=模式号
-	mov	ax,0x4f02	;切换模式模式功能，指定ax=0x4f01
-	int	0x10
-	
-	mov ax, 0x610
-	mov ds, ax
-	
-	xor ax, ax
-	mov	al,[es:di+0x19]
-	mov	[VCOLOR],ax ;保存颜色位数
-	mov	ax,[es:di+0x12]
-	mov	[XWIDTH],ax		;保存x分辨率 宽度
-	mov	ax,[es:di+0x14]
-	mov	[YHEIGHT],ax		;保存y分辨率 高度
-	mov	eax,[es:di+0x28]
-	mov	[VRAM],eax		;保存VRAM地址
-	
-	JMP	protect_set
-
-	;切换失败切换到默认的模式
-screen_default:
-	;jmp $
-	mov ax, 0x610
-	mov ds, ax
-	
-	mov		al,0x13			;320*200*8彩色
-	mov		ah,0x00
-	int		0x10
-	mov		BYTE [VCOLOR],8
-	mov		WORD [XWIDTH],320
-	mov		WORD [YHEIGHT],200
-	mov		DWORD [VRAM],0x000a0000
 
 protect_set:
 	
@@ -256,7 +149,6 @@ LIMIT_IDT equ	0x000007ff
 IDTR:
 	.limit		dw	LIMIT_IDT			;IDT的长度
 	.base		dd	ADR_IDT			;IDT的物理地址
-		
 	
 char: db 'L'
 
